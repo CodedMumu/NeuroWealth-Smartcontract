@@ -1,8 +1,10 @@
 import React from 'react';
 import { BookOpen, TrendingUp, Layers, RefreshCw, DollarSign, Zap, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { LearnTopicNav } from '@/components/LearnTopicNav';
 
 interface GlossaryEntry {
+  id: string;
   term: string;
   icon: React.ElementType;
   iconColor: string;
@@ -12,6 +14,7 @@ interface GlossaryEntry {
 
 const GLOSSARY: GlossaryEntry[] = [
   {
+    id: 'apy',
     term: 'APY — Annual Percentage Yield',
     icon: TrendingUp,
     iconColor: 'text-emerald-400',
@@ -20,6 +23,7 @@ const GLOSSARY: GlossaryEntry[] = [
       'APY (Annual Percentage Yield) is the real return you earn over a year including the effect of compounding. Compounding means your earnings themselves earn interest. For example, 8% APY on 1,000 USDC means you would have roughly 1,080 USDC after one year — even if the rate was only applied daily and the daily earnings were added back to your balance.',
   },
   {
+    id: 'shares',
     term: 'Shares',
     icon: DollarSign,
     iconColor: 'text-indigo-400',
@@ -28,6 +32,7 @@ const GLOSSARY: GlossaryEntry[] = [
       'When you deposit USDC, the smart contract mints "shares" that represent your portion of the total vault. As the vault earns yield, each share becomes worth slightly more USDC. When you withdraw, your shares are burned and you receive back USDC. You never hold shares directly in your wallet — they live inside the Soroban contract.',
   },
   {
+    id: 'exchange-rate',
     term: 'Exchange Rate',
     icon: RefreshCw,
     iconColor: 'text-amber-400',
@@ -36,6 +41,7 @@ const GLOSSARY: GlossaryEntry[] = [
       'The exchange rate starts at 1.0 (1 share = 1 USDC) and rises over time as yield accumulates in the vault. If the exchange rate is 1.05, each share is worth 1.05 USDC. The rate only ever increases — it never drops from earned yield, though unexpected protocol losses could theoretically reduce it.',
   },
   {
+    id: 'rebalancing',
     term: 'Rebalancing',
     icon: Zap,
     iconColor: 'text-emerald-400',
@@ -44,6 +50,7 @@ const GLOSSARY: GlossaryEntry[] = [
       'The AI agent checks available yield rates across all integrated protocols every hour. If a different protocol offers more than 0.5% higher APY, it calls the vault\'s rebalance function to move the pooled funds. This is fully automated — you do not need to approve each rebalance. The vault enforces a cooldown between rebalances to prevent excessive activity.',
   },
   {
+    id: 'blend-protocol',
     term: 'Blend Protocol',
     icon: Layers,
     iconColor: 'text-blue-400',
@@ -52,6 +59,7 @@ const GLOSSARY: GlossaryEntry[] = [
       'Blend is a lending protocol built with Soroban smart contracts on Stellar. Depositors supply USDC that borrowers can borrow by posting collateral. Lenders earn interest paid by borrowers. NeuroWealth\'s Conservative and Balanced strategies use Blend as the primary yield source. Learn more at blendprotocol.org.',
   },
   {
+    id: 'dex',
     term: 'DEX — Decentralised Exchange',
     icon: RefreshCw,
     iconColor: 'text-purple-400',
@@ -59,6 +67,11 @@ const GLOSSARY: GlossaryEntry[] = [
     detail:
       'Stellar has a built-in DEX where anyone can trade assets without a central company in the middle. Liquidity providers (LPs) deposit pairs of assets into a pool; traders swap through those pools and pay a fee. LPs earn a share of those fees. The Balanced and Growth strategies may deploy funds into Stellar DEX liquidity pools to capture trading fees as an additional yield source.',
   },
+];
+
+const NAV_TOPICS = [
+  { id: 'ai-section', label: 'How the AI works' },
+  ...GLOSSARY.map((e) => ({ id: e.id, label: e.term.split(' —')[0] })),
 ];
 
 export const metadata = {
@@ -70,7 +83,7 @@ export const metadata = {
 export default function LearnPage() {
   return (
     <div className="min-h-screen bg-[#080b11] text-slate-100">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Back link */}
         <Link
           href="/"
@@ -94,71 +107,87 @@ export default function LearnPage() {
           </p>
         </div>
 
-        {/* AI section */}
-        <section
-          className="mb-10 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6"
-          aria-labelledby="ai-section-heading"
-        >
-          <h2 id="ai-section-heading" className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-            <Zap size={18} className="text-emerald-400" aria-hidden="true" />
-            How does the AI manage my money?
-          </h2>
-          <p className="text-sm text-slate-300 leading-relaxed mb-4">
-            NeuroWealth runs an autonomous AI agent that monitors yield rates across DeFi protocols on
-            Stellar 24 hours a day. When you deposit USDC, your funds are pooled with other users inside
-            a Soroban smart contract (a program that runs directly on the Stellar blockchain).
-          </p>
-          <p className="text-sm text-slate-300 leading-relaxed mb-4">
-            Every hour, the agent compares available interest rates. If a better opportunity exists — one
-            that pays more than 0.5% extra APY — it automatically moves the pooled funds via a{' '}
-            <strong className="text-white">rebalance</strong> transaction. Your personal share of the
-            vault is tracked on-chain at all times, so you can withdraw your portion whenever you like,
-            no questions asked.
-          </p>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            The AI never holds your private keys. Your USDC lives inside an audited smart contract, not
-            on the AI agent&apos;s server. The agent can only call specific vault functions (rebalance,
-            harvest) — it cannot withdraw funds to arbitrary addresses.
-          </p>
-        </section>
+        {/* Two-column layout: nav sidebar on md+, content fills width on mobile */}
+        <div className="flex gap-10 items-start">
+          {/* Topic navigation — mobile drawer trigger + desktop sidebar */}
+          <LearnTopicNav topics={NAV_TOPICS} />
 
-        {/* Glossary */}
-        <section aria-labelledby="glossary-heading">
-          <h2 id="glossary-heading" className="text-xl font-bold text-white mb-6">
-            Glossary
-          </h2>
-          <dl className="space-y-4">
-            {GLOSSARY.map((entry) => {
-              const EntryIcon = entry.icon;
-              return (
-                <div
-                  key={entry.term}
-                  className="glass-panel rounded-2xl p-5 border border-slate-700/60"
-                >
-                  <dt>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span
-                        className={`p-1.5 rounded-lg bg-slate-800 ${entry.iconColor}`}
-                        aria-hidden="true"
-                      >
-                        <EntryIcon size={16} />
-                      </span>
-                      <span className="font-bold text-white text-base">{entry.term}</span>
+          {/* Main content */}
+          <div className="flex-1 min-w-0">
+            {/* AI section */}
+            <section
+              id="ai-section"
+              tabIndex={-1}
+              className="mb-10 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 outline-none scroll-mt-6"
+              aria-labelledby="ai-section-heading"
+            >
+              <h2
+                id="ai-section-heading"
+                className="text-lg font-bold text-white mb-2 flex items-center gap-2"
+              >
+                <Zap size={18} className="text-emerald-400" aria-hidden="true" />
+                How does the AI manage my money?
+              </h2>
+              <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                NeuroWealth runs an autonomous AI agent that monitors yield rates across DeFi protocols on
+                Stellar 24 hours a day. When you deposit USDC, your funds are pooled with other users inside
+                a Soroban smart contract (a program that runs directly on the Stellar blockchain).
+              </p>
+              <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                Every hour, the agent compares available interest rates. If a better opportunity exists — one
+                that pays more than 0.5% extra APY — it automatically moves the pooled funds via a{' '}
+                <strong className="text-white">rebalance</strong> transaction. Your personal share of the
+                vault is tracked on-chain at all times, so you can withdraw your portion whenever you like,
+                no questions asked.
+              </p>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                The AI never holds your private keys. Your USDC lives inside an audited smart contract, not
+                on the AI agent&apos;s server. The agent can only call specific vault functions (rebalance,
+                harvest) — it cannot withdraw funds to arbitrary addresses.
+              </p>
+            </section>
+
+            {/* Glossary */}
+            <section aria-labelledby="glossary-heading">
+              <h2 id="glossary-heading" className="text-xl font-bold text-white mb-6">
+                Glossary
+              </h2>
+              <dl className="space-y-4">
+                {GLOSSARY.map((entry) => {
+                  const EntryIcon = entry.icon;
+                  return (
+                    <div
+                      key={entry.term}
+                      id={entry.id}
+                      tabIndex={-1}
+                      className="glass-panel rounded-2xl p-5 border border-slate-700/60 outline-none scroll-mt-6"
+                    >
+                      <dt>
+                        <div className="flex items-center gap-3 mb-2">
+                          <span
+                            className={`p-1.5 rounded-lg bg-slate-800 ${entry.iconColor}`}
+                            aria-hidden="true"
+                          >
+                            <EntryIcon size={16} />
+                          </span>
+                          <span className="font-bold text-white text-base">{entry.term}</span>
+                        </div>
+                        <p className="text-sm font-medium text-emerald-400 mb-2">{entry.summary}</p>
+                      </dt>
+                      <dd className="text-sm text-slate-400 leading-relaxed">{entry.detail}</dd>
                     </div>
-                    <p className="text-sm font-medium text-emerald-400 mb-2">{entry.summary}</p>
-                  </dt>
-                  <dd className="text-sm text-slate-400 leading-relaxed">{entry.detail}</dd>
-                </div>
-              );
-            })}
-          </dl>
-        </section>
+                  );
+                })}
+              </dl>
+            </section>
 
-        {/* Footer note */}
-        <p className="mt-10 text-xs text-slate-500 text-center">
-          NeuroWealth is not a licensed financial adviser. DeFi carries risks including smart contract
-          vulnerabilities and market volatility. Only deposit funds you can afford to lose.
-        </p>
+            {/* Footer note */}
+            <p className="mt-10 text-xs text-slate-500 text-center">
+              NeuroWealth is not a licensed financial adviser. DeFi carries risks including smart contract
+              vulnerabilities and market volatility. Only deposit funds you can afford to lose.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
